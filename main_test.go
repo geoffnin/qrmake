@@ -59,8 +59,8 @@ func TestGenerateQRCodePropgatesError(t *testing.T) {
 	}
 }
 
-func generateRandomString(length int) string {
-	var letters = []rune("abcdefghijklmnopqrstuvwxyzABVDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+func generateRandomString(mode string, length int) string {
+	var letters = []rune(mode)
 	var runes = make([]rune, length)
 
 	for i := range runes {
@@ -70,26 +70,36 @@ func generateRandomString(length int) string {
 	return string(runes)
 }
 
-func TestInputAnalysisReturnsMinVersion(t *testing.T) {
+func TestMinVersionReturnsMinVersion(t *testing.T) {
+
+	numericMode := "0123456789"
+	alphanumericMode := "ABVDEFGHIJKLMNOPQRSTUVWXYZ0123456789-./']+$"
+	bytesMode := "abcdefghijklmnopqrstuvwxyzABVDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
 	table := []struct {
 		input    string
+		encoding Mode
 		excepted Version
 	}{
-		{"555-2834", Version(1)},
-		{generateRandomString(24), Version(1)},
-		{generateRandomString(30), Version(2)},
-		{generateRandomString(154), Version(5)},
-		{generateRandomString(2200), Version(28)},
+		{"555-2834", modeByte, Version(1)},
+		{"555-2834", dataAnalysis("555-2834"), Version(1)},
+		{"5552834", dataAnalysis("5552834"), Version(1)},
+		{generateRandomString(alphanumericMode, 24), modeAlphanumeric, Version(1)},
+		{generateRandomString(alphanumericMode, 30), modeAlphanumeric, Version(2)},
+		{generateRandomString(alphanumericMode, 154), modeAlphanumeric, Version(5)},
+		{generateRandomString(alphanumericMode, 2200), modeAlphanumeric, Version(28)},
+		{generateRandomString(numericMode, 2200), modeNumeric, Version(21)},
+		{generateRandomString(bytesMode, 2200), modeByte, Version(35)},
 	}
 
 	for _, test := range table {
-		result, _ := inputAnalysis(test.input)
+		result, _ := minVersion(test.input, test.encoding)
 		if result != test.excepted {
 			t.Errorf("Expected Version(%d) but got Version(%d) for input of len(%d)", test.excepted, result, len(test.input))
 		}
 	}
 
-	_, err := inputAnalysis(generateRandomString(10000))
+	_, err := minVersion(generateRandomString(alphanumericMode, 10000), modeAlphanumeric)
 
 	if err == nil || err.Error() != "input too large for QR Code" {
 		t.Errorf("Expected size exception, got %v", err)
@@ -138,5 +148,4 @@ func TestDataAnalysisReturnsTheCorrectMode(t *testing.T) {
 			t.Errorf("DataAnalysis(%v) expected %v but got %v", test.input, test.expected, result)
 		}
 	}
-
 }

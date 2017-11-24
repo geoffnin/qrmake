@@ -27,56 +27,68 @@ func (v Version) PatternSize() int {
 	return 4*int(v) + 17
 }
 
-func inputAnalysis(data string) (Version, error) {
+func minVersion(data string, mode Mode) (Version, error) {
 	table := []struct {
-		version   Version
-		maxLength int
+		version               Version
+		maxAlphanumericLength int
+		maxNumericLength      int
+		maxBytesLength        int
 	}{
-		{Version(1), 25},
-		{Version(2), 47},
-		{Version(3), 77},
-		{Version(4), 114},
-		{Version(5), 154},
-		{Version(6), 195},
-		{Version(7), 224},
-		{Version(8), 279},
-		{Version(9), 335},
-		{Version(10), 359},
-		{Version(11), 468},
-		{Version(12), 535},
-		{Version(13), 619},
-		{Version(14), 667},
-		{Version(15), 758},
-		{Version(16), 854},
-		{Version(17), 938},
-		{Version(18), 1046},
-		{Version(19), 1153},
-		{Version(20), 1249},
-		{Version(21), 1352},
-		{Version(22), 1460},
-		{Version(23), 1588},
-		{Version(24), 1704},
-		{Version(25), 1853},
-		{Version(26), 1990},
-		{Version(27), 2132},
-		{Version(28), 2223},
-		{Version(29), 2369},
-		{Version(30), 2520},
-		{Version(31), 2677},
-		{Version(32), 2840},
-		{Version(33), 3009},
-		{Version(34), 3183},
-		{Version(35), 3351},
-		{Version(36), 3537},
-		{Version(37), 3729},
-		{Version(38), 3927},
-		{Version(39), 4087},
-		{Version(40), 4296},
+		{Version(1), 25, 41, 17},
+		{Version(2), 47, 77, 32},
+		{Version(3), 77, 127, 53},
+		{Version(4), 114, 187, 73},
+		{Version(5), 154, 255, 106},
+		{Version(6), 195, 322, 134},
+		{Version(7), 224, 370, 154},
+		{Version(8), 279, 461, 192},
+		{Version(9), 335, 552, 230},
+		{Version(10), 359, 652, 271},
+		{Version(11), 468, 772, 321},
+		{Version(12), 535, 883, 367},
+		{Version(13), 619, 1022, 425},
+		{Version(14), 667, 1101, 458},
+		{Version(15), 758, 1250, 520},
+		{Version(16), 854, 1408, 586},
+		{Version(17), 938, 1548, 644},
+		{Version(18), 1046, 1725, 718},
+		{Version(19), 1153, 1903, 792},
+		{Version(20), 1249, 2061, 858},
+		{Version(21), 1352, 2232, 929},
+		{Version(22), 1460, 2409, 1003},
+		{Version(23), 1588, 2620, 1091},
+		{Version(24), 1704, 2812, 1171},
+		{Version(25), 1853, 3057, 1273},
+		{Version(26), 1990, 3283, 1367},
+		{Version(27), 2132, 3517, 1465},
+		{Version(28), 2223, 3669, 1528},
+		{Version(29), 2369, 3909, 1628},
+		{Version(30), 2520, 4158, 1732},
+		{Version(31), 2677, 4417, 1840},
+		{Version(32), 2840, 4686, 1952},
+		{Version(33), 3009, 4965, 2068},
+		{Version(34), 3183, 5253, 2188},
+		{Version(35), 3351, 5529, 2303},
+		{Version(36), 3537, 5836, 2431},
+		{Version(37), 3729, 6153, 2563},
+		{Version(38), 3927, 6479, 2699},
+		{Version(39), 4087, 6743, 2809},
+		{Version(40), 4296, 7089, 2953},
 	}
 
 	for _, v := range table {
-		if v.maxLength >= len(data) {
-			return v.version, nil
+		if mode == modeAlphanumeric {
+			if v.maxAlphanumericLength >= len(data) {
+				return v.version, nil
+			}
+		} else if mode == modeNumeric {
+			if v.maxNumericLength >= len(data) {
+				return v.version, nil
+			}
+		} else if mode == modeByte {
+			if v.maxBytesLength >= len(data) {
+				return v.version, nil
+			}
 		}
 	}
 
