@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"image"
@@ -102,6 +104,32 @@ const (
 	modeAlphanumeric
 	modeByte
 )
+
+func encode(code string) []byte {
+	mode := dataAnalysis(code)
+	// version := minVersion(code, mode)
+
+	output := new(bytes.Buffer)
+
+	if mode == modeNumeric {
+		err := binary.Write(output, binary.LittleEndian, uint8(1))
+		if err != nil {
+			panic(err)
+		}
+	} else if mode == modeAlphanumeric {
+		err := binary.Write(output, binary.LittleEndian, uint8(2))
+		if err != nil {
+			panic(err)
+		}
+	} else if mode == modeByte {
+		err := binary.Write(output, binary.LittleEndian, uint8(4))
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return output.Bytes()
+}
 
 func dataAnalysis(input string) Mode {
 	// Check if input is just a number

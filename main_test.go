@@ -149,3 +149,24 @@ func TestDataAnalysisReturnsTheCorrectMode(t *testing.T) {
 		}
 	}
 }
+
+func TestEncodeAddsModeIndicator(t *testing.T) {
+	table := []struct {
+		input    string
+		expected int
+	}{
+		{"12345", 1},
+		{"ABC123", 2},
+		{"abc123", 4},
+	}
+
+	for _, test := range table {
+		result := encode(test.input)
+		if len(result) == 0 {
+			t.Errorf("No result from encoding.")
+		} else if int(result[0]) != test.expected {
+			t.Errorf("Header not set correctly, expected %v got %v", test.expected, result[0])
+		}
+	}
+
+}
